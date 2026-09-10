@@ -50,16 +50,15 @@ export default function Home() {
           <a href="#security">Security</a>
         </div>
 
-        <Link href="/dashboard" className="nav-button">
-          Open demo
+        <Link href="/login" className="nav-button">
+          Sign in
         </Link>
       </nav>
 
       <section className="hero container">
         <div className="hero-copy">
           <div className="eyebrow">
-            <Sparkles size={15} />
-            A safer way to learn investment software
+            <Sparkles size={15} />A safer way to learn investment software
           </div>
 
           <h1>
@@ -73,8 +72,8 @@ export default function Home() {
           </p>
 
           <div className="hero-actions">
-            <Link href="/dashboard" className="primary-button">
-              Explore dashboard
+            <Link href="/register" className="primary-button">
+              Create demo account
               <ArrowRight size={18} />
             </Link>
 
