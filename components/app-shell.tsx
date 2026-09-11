@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
   LayoutDashboard,
+  LoaderCircle,
   LogOut,
   ReceiptText,
   Settings,
@@ -12,7 +17,7 @@ import {
 import { brand } from "@/lib/brand";
 
 type AppShellProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   mode?: "user" | "admin";
 };
 
@@ -20,6 +25,10 @@ export function AppShell({
   children,
   mode = "user",
 }: AppShellProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const userNavigation = [
     {
       label: "Overview",
@@ -28,22 +37,22 @@ export function AppShell({
     },
     {
       label: "Deposit",
-      href: "/dashboard",
+      href: "/dashboard/deposit",
       icon: ArrowDownToLine,
     },
     {
       label: "Withdraw",
-      href: "/dashboard",
+      href: "/dashboard/withdraw",
       icon: ArrowUpFromLine,
     },
     {
       label: "Transactions",
-      href: "/dashboard",
+      href: "/dashboard#transactions",
       icon: ReceiptText,
     },
     {
       label: "Settings",
-      href: "/dashboard",
+      href: "/dashboard/profile",
       icon: Settings,
     },
   ];
@@ -56,28 +65,59 @@ export function AppShell({
     },
     {
       label: "Users",
-      href: "/admin",
+      href: "/admin/users",
       icon: Users,
     },
     {
       label: "Deposits",
-      href: "/admin",
+      href: "/admin/deposits",
       icon: ArrowDownToLine,
     },
     {
       label: "Withdrawals",
-      href: "/admin",
+      href: "/admin/withdrawals",
       icon: ArrowUpFromLine,
     },
     {
       label: "Audit log",
-      href: "/admin",
+      href: "/admin/audit-log",
       icon: ReceiptText,
     },
   ];
 
   const navigation =
-    mode === "admin" ? adminNavigation : userNavigation;
+    mode === "admin"
+      ? adminNavigation
+      : userNavigation;
+
+  function linkIsActive(href: string) {
+    const path = href.split("#")[0];
+
+    if (path === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+
+    if (path === "/admin") {
+      return pathname === "/admin";
+    }
+
+    return pathname.startsWith(path);
+  }
+
+  async function handleLogout() {
+    try {
+      setLoggingOut(true);
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      router.push("/login");
+      router.refresh();
+    } catch {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <main className="application">
@@ -87,7 +127,10 @@ export function AppShell({
 
       <aside className="sidebar">
         <Link href="/" className="brand sidebar-brand">
-          <span className="brand-mark">N</span>
+          <span className="brand-mark">
+            {brand.shortName || "NV"}
+          </span>
+
           <span>{brand.name}</span>
         </Link>
 
@@ -98,7 +141,7 @@ export function AppShell({
         </p>
 
         <nav className="sidebar-navigation">
-          {navigation.map((item, index) => {
+          {navigation.map((item) => {
             const Icon = item.icon;
 
             return (
@@ -106,7 +149,9 @@ export function AppShell({
                 key={item.label}
                 href={item.href}
                 className={`sidebar-link ${
-                  index === 0 ? "active" : ""
+                  linkIsActive(item.href)
+                    ? "active"
+                    : ""
                 }`}
               >
                 <Icon size={18} />
@@ -116,10 +161,23 @@ export function AppShell({
           })}
         </nav>
 
-        <Link href="/" className="sidebar-link exit-link">
-          <LogOut size={18} />
-          Exit demo
-        </Link>
+        <button
+          type="button"
+          className="sidebar-link exit-link"
+          onClick={handleLogout}
+          disabled={loggingOut}
+        >
+          {loggingOut ? (
+            <LoaderCircle
+              size={18}
+              className="spin"
+            />
+          ) : (
+            <LogOut size={18} />
+          )}
+
+          {loggingOut ? "Signing out..." : "Sign out"}
+        </button>
       </aside>
 
       <div className="application-content">

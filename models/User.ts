@@ -5,14 +5,22 @@ import mongoose, {
 } from "mongoose";
 
 export type UserRole = "user" | "admin";
+export type AccountStatus = "active" | "suspended";
 
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
   role: UserRole;
-  balance: number;
-  accountStatus: "active" | "suspended";
+
+  depositBalance: number;
+  profitBalance: number;
+
+  phone?: string;
+  country?: string;
+  accountStatus: AccountStatus;
+  passwordChangedAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,16 +55,39 @@ const userSchema = new Schema<IUser>(
       default: "user",
     },
 
-    balance: {
+    depositBalance: {
       type: Number,
       default: 0,
       min: 0,
+    },
+
+    profitBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    country: {
+      type: String,
+      trim: true,
+      default: "",
     },
 
     accountStatus: {
       type: String,
       enum: ["active", "suspended"],
       default: "active",
+    },
+
+    passwordChangedAt: {
+      type: Date,
+      default: null,
     },
   },
   {

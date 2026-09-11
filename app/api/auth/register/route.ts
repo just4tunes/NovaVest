@@ -81,14 +81,17 @@ export async function POST(request: Request) {
     const isAdmin =
       email === process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: isAdmin ? "admin" : "user",
-      balance: 0,
-      accountStatus: "active",
-    });
+const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+  role: isAdmin ? "admin" : "user",
+  depositBalance: 0,
+  profitBalance: 0,
+  phone: "",
+  country: "",
+  accountStatus: "active",
+});
 
     const token = await createToken({
       userId: user._id.toString(),
