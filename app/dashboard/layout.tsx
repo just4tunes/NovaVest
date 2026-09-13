@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+
+import { InvestmentNotification } from "@/components/investment-notification";
+import { WithdrawalNotification } from "@/components/withdrawal-notification";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function DashboardLayout({
@@ -16,5 +19,11 @@ export default async function DashboardLayout({
     redirect("/admin");
   }
 
-  return children;
+  return (
+    <>
+      {children}
+      <WithdrawalNotification />
+      <InvestmentNotification />
+    </>
+  );
 }

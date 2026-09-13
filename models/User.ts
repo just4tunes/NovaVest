@@ -1,10 +1,7 @@
-import mongoose, {
-  Document,
-  Model,
-  Schema,
-} from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export type UserRole = "user" | "admin";
+
 export type AccountStatus = "active" | "suspended";
 
 export interface IUser extends Document {
@@ -15,11 +12,15 @@ export interface IUser extends Document {
 
   depositBalance: number;
   profitBalance: number;
+  investmentBalance: number;
 
   phone?: string;
   country?: string;
   accountStatus: AccountStatus;
   passwordChangedAt?: Date;
+
+  withdrawalsBlocked: boolean;
+  withdrawalBlockMessage: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -67,6 +68,12 @@ const userSchema = new Schema<IUser>(
       min: 0,
     },
 
+    investmentBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     phone: {
       type: String,
       trim: true,
@@ -89,14 +96,25 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+
+    withdrawalsBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    withdrawalBlockMessage: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 300,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const User: Model<IUser> =
-  mongoose.models.User ||
-  mongoose.model<IUser>("User", userSchema);
+  mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
 export default User;

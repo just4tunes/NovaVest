@@ -12,6 +12,9 @@ import {
   ReceiptText,
   Settings,
   Users,
+  WalletCards,
+  BriefcaseBusiness,
+  ChartNoAxesCombined,
 } from "lucide-react";
 
 import { brand } from "@/lib/brand";
@@ -21,10 +24,7 @@ type AppShellProps = {
   mode?: "user" | "admin";
 };
 
-export function AppShell({
-  children,
-  mode = "user",
-}: AppShellProps) {
+export function AppShell({ children, mode = "user" }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -45,9 +45,15 @@ export function AppShell({
       href: "/dashboard/withdraw",
       icon: ArrowUpFromLine,
     },
+
+    {
+      label: "Investments",
+      href: "/dashboard/investments",
+      icon: BriefcaseBusiness,
+    },
     {
       label: "Transactions",
-      href: "/dashboard#transactions",
+      href: "/dashboard/transactions",
       icon: ReceiptText,
     },
     {
@@ -68,11 +74,25 @@ export function AppShell({
       href: "/admin/users",
       icon: Users,
     },
+
     {
-      label: "Deposits",
-      href: "/admin/deposits",
-      icon: ArrowDownToLine,
+      label: "Wallets",
+      href: "/admin/wallets",
+      icon: WalletCards,
     },
+
+    {
+      label: "Investment plans",
+      href: "/admin/investment-plans",
+      icon: BriefcaseBusiness,
+    },
+
+    {
+      label: "Investments",
+      href: "/admin/investments",
+      icon: ChartNoAxesCombined,
+    },
+
     {
       label: "Withdrawals",
       href: "/admin/withdrawals",
@@ -85,10 +105,7 @@ export function AppShell({
     },
   ];
 
-  const navigation =
-    mode === "admin"
-      ? adminNavigation
-      : userNavigation;
+  const navigation = mode === "admin" ? adminNavigation : userNavigation;
 
   function linkIsActive(href: string) {
     const path = href.split("#")[0];
@@ -121,23 +138,15 @@ export function AppShell({
 
   return (
     <main className="application">
-      <div className="demo-banner">
-        Educational demo · Balances are simulated
-      </div>
-
       <aside className="sidebar">
         <Link href="/" className="brand sidebar-brand">
-          <span className="brand-mark">
-            {brand.shortName || "NV"}
-          </span>
+          <span className="brand-mark">{brand.shortName || "NV"}</span>
 
           <span>{brand.name}</span>
         </Link>
 
         <p className="sidebar-label">
-          {mode === "admin"
-            ? "Administration"
-            : "Your account"}
+          {mode === "admin" ? "Administration" : "Your account"}
         </p>
 
         <nav className="sidebar-navigation">
@@ -149,9 +158,7 @@ export function AppShell({
                 key={item.label}
                 href={item.href}
                 className={`sidebar-link ${
-                  linkIsActive(item.href)
-                    ? "active"
-                    : ""
+                  linkIsActive(item.href) ? "active" : ""
                 }`}
               >
                 <Icon size={18} />
@@ -168,10 +175,7 @@ export function AppShell({
           disabled={loggingOut}
         >
           {loggingOut ? (
-            <LoaderCircle
-              size={18}
-              className="spin"
-            />
+            <LoaderCircle size={18} className="spin" />
           ) : (
             <LogOut size={18} />
           )}
@@ -180,9 +184,7 @@ export function AppShell({
         </button>
       </aside>
 
-      <div className="application-content">
-        {children}
-      </div>
+      <div className="application-content">{children}</div>
     </main>
   );
 }

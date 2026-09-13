@@ -6,7 +6,8 @@ import User from "@/models/User";
 
 export async function GET() {
   try {
-    const authenticatedUser = await getCurrentUser();
+    const authenticatedUser =
+      await getCurrentUser();
 
     if (!authenticatedUser) {
       return NextResponse.json(
@@ -21,9 +22,9 @@ export async function GET() {
 
     await connectDatabase();
 
-    const user = await User.findById(authenticatedUser.userId).select(
-      "-password"
-    );
+    const user = await User.findById(
+      authenticatedUser.userId
+    ).select("-password");
 
     if (!user) {
       return NextResponse.json(
@@ -36,6 +37,15 @@ export async function GET() {
       );
     }
 
+    const depositBalance =
+      user.depositBalance || 0;
+
+    const profitBalance =
+      user.profitBalance || 0;
+
+    const investmentBalance =
+      user.investmentBalance || 0;
+
     return NextResponse.json({
       user: {
         id: user._id.toString(),
@@ -45,38 +55,52 @@ export async function GET() {
         phone: user.phone || "",
         country: user.country || "",
         accountStatus: user.accountStatus,
-        depositBalance: user.depositBalance || 0,
-        profitBalance: user.profitBalance || 0,
+        depositBalance,
+        profitBalance,
+        investmentBalance,
+        availableBalance:
+          depositBalance + profitBalance,
         totalBalance:
-          (user.depositBalance || 0) +
-          (user.profitBalance || 0),
-        passwordChangedAt: user.passwordChangedAt || null,
+          depositBalance +
+          profitBalance +
+          investmentBalance,
+        withdrawalsBlocked:
+          user.withdrawalsBlocked || false,
+        withdrawalBlockMessage:
+          user.withdrawalBlockMessage || "",
+        passwordChangedAt:
+          user.passwordChangedAt || null,
         createdAt: user.createdAt,
       },
     });
- } catch (error) {
-  console.error("Get profile error:", error);
+  } catch (error) {
+    console.error(
+      "Get profile error:",
+      error
+    );
 
-  const errorMessage =
-    error instanceof Error
-      ? error.message
-      : "Unknown profile error";
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Unknown profile error";
 
-  return NextResponse.json(
-    {
-      message: "Unable to load your profile.",
-      error: errorMessage,
-    },
-    {
-      status: 500,
-    }
-  );
-}
+    return NextResponse.json(
+      {
+        message:
+          "Unable to load your profile.",
+        error: errorMessage,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
 
 export async function PATCH(request: Request) {
   try {
-    const authenticatedUser = await getCurrentUser();
+    const authenticatedUser =
+      await getCurrentUser();
 
     if (!authenticatedUser) {
       return NextResponse.json(
@@ -91,14 +115,23 @@ export async function PATCH(request: Request) {
 
     const body = await request.json();
 
-    const name = String(body.name || "").trim();
-    const phone = String(body.phone || "").trim();
-    const country = String(body.country || "").trim();
+    const name = String(
+      body.name || ""
+    ).trim();
+
+    const phone = String(
+      body.phone || ""
+    ).trim();
+
+    const country = String(
+      body.country || ""
+    ).trim();
 
     if (name.length < 2) {
       return NextResponse.json(
         {
-          message: "Your name must contain at least 2 characters.",
+          message:
+            "Your name must contain at least 2 characters.",
         },
         {
           status: 400,
@@ -116,7 +149,7 @@ export async function PATCH(request: Request) {
         country,
       },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       }
     ).select("-password");
@@ -133,7 +166,8 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({
-      message: "Your profile was updated successfully.",
+      message:
+        "Your profile was updated successfully.",
       user: {
         id: user._id.toString(),
         name: user.name,
@@ -142,22 +176,26 @@ export async function PATCH(request: Request) {
         country: user.country || "",
       },
     });
-} catch (error) {
-  console.error("Get profile error:", error);
+  } catch (error) {
+    console.error(
+      "Update profile error:",
+      error
+    );
 
-  const message =
-    error instanceof Error
-      ? error.message
-      : "Unknown profile error";
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Unknown profile error";
 
-  return NextResponse.json(
-    {
-      message: "Unable to load your profile.",
-      error: message,
-    },
-    {
-      status: 500,
-    }
-  );
-}
+    return NextResponse.json(
+      {
+        message:
+          "Unable to update your profile.",
+        error: errorMessage,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

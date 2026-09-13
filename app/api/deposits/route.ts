@@ -1,56 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
+import { ensureDefaultWallets } from "@/lib/default-wallets";
 import { connectDatabase } from "@/lib/mongodb";
+import CryptoWallet from "@/models/CryptoWallet";
 import Deposit from "@/models/Deposit";
 import User from "@/models/User";
 
-const demoWallets: Record<
-  string,
-  {
-    network: string;
-    address: string;
-  }
-> = {
-  BTC: {
-    network: "Bitcoin Testnet",
-    address: "DEMO_BTC_TESTNET_ADDRESS",
-  },
-
-  ETH: {
-    network: "Ethereum Sepolia",
-    address: "DEMO_ETH_SEPOLIA_ADDRESS",
-  },
-
-  USDT_TRC20: {
-    network: "TRON Nile Testnet",
-    address: "DEMO_USDT_TRC20_ADDRESS",
-  },
-
-  USDT_ERC20: {
-    network: "Ethereum Sepolia",
-    address: "DEMO_USDT_ERC20_ADDRESS",
-  },
-
-  USDC: {
-    network: "Ethereum Sepolia",
-    address: "DEMO_USDC_TESTNET_ADDRESS",
-  },
-
-  BNB: {
-    network: "BNB Chain Testnet",
-    address: "DEMO_BNB_TESTNET_ADDRESS",
-  },
-
-  SOL: {
-    network: "Solana Devnet",
-    address: "DEMO_SOLANA_DEVNET_ADDRESS",
-  },
-};
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const authenticatedUser = await getCurrentUser();
+    const authenticatedUser =
+      await getCurrentUser();
 
     if (!authenticatedUser) {
       return NextResponse.json(
@@ -64,6 +26,28 @@ export async function GET() {
     }
 
     await connectDatabase();
+    await ensureDefaultWallets();
+
+    const databaseWallets =
+      await CryptoWallet.find({
+        enabled: true,
+      })
+        .sort({
+          sortOrder: 1,
+        })
+        .lean();
+
+    const wallets = Object.fromEntries(
+      databaseWallets.map((wallet) => [
+        wallet.key,
+        {
+          name: wallet.name,
+          symbol: wallet.symbol,
+          network: wallet.network,
+          address: wallet.address,
+        },
+      ])
+    );
 
     const deposits = await Deposit.find({
       userId: authenticatedUser.userId,
@@ -73,12 +57,23 @@ export async function GET() {
       })
       .lean();
 
-    return NextResponse.json({
-      wallets: demoWallets,
-      deposits,
-    });
+    return NextResponse.json(
+      {
+        wallets,
+        deposits,
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error) {
-    console.error("Get deposits error:", error);
+    console.error(
+      "Get deposits error:",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -91,9 +86,12 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+) {
   try {
-    const authenticatedUser = await getCurrentUser();
+    const authenticatedUser =
+      await getCurrentUser();
 
     if (!authenticatedUser) {
       return NextResponse.json(
@@ -109,9 +107,12 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const amount = Number(body.amount);
+
     const walletKey = String(
       body.walletKey || ""
-    ).trim();
+    )
+      .trim()
+      .toUpperCase();
 
     const transactionHash = String(
       body.transactionHash || ""
@@ -121,7 +122,10 @@ export async function POST(request: Request) {
       body.receiptUrl || ""
     ).trim();
 
-    if (!Number.isFinite(amount) || amount < 1) {
+    if (
+      !Number.isFinite(amount) ||
+      amount < 1
+    ) {
       return NextResponse.json(
         {
           message:
@@ -133,12 +137,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const selectedWallet = demoWallets[walletKey];
-
-    if (!selectedWallet) {
+    if (!walletKey) {
       return NextResponse.json(
         {
-          message: "Select a supported crypto asset.",
+          message:
+            "Select a crypto asset.",
         },
         {
           status: 400,
@@ -158,16 +161,38 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectDatabase();
+    if (!receiptUrl) {
+      return NextResponse.json(
+        {
+          message:
+            "Upload the demo payment receipt.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
-    const user = await User.findById(
-      authenticatedUser.userId
-    );
+    await connectDatabase();
+    await ensureDefaultWallets();
+
+    const [user, selectedWallet] =
+      await Promise.all([
+        User.findById(
+          authenticatedUser.userId
+        ),
+
+        CryptoWallet.findOne({
+          key: walletKey,
+          enabled: true,
+        }),
+      ]);
 
     if (!user) {
       return NextResponse.json(
         {
-          message: "User account was not found.",
+          message:
+            "User account was not found.",
         },
         {
           status: 404,
@@ -175,7 +200,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (user.accountStatus !== "active") {
+    if (
+      user.accountStatus !== "active"
+    ) {
       return NextResponse.json(
         {
           message:
@@ -183,6 +210,18 @@ export async function POST(request: Request) {
         },
         {
           status: 403,
+        }
+      );
+    }
+
+    if (!selectedWallet) {
+      return NextResponse.json(
+        {
+          message:
+            "This deposit method is unavailable.",
+        },
+        {
+          status: 400,
         }
       );
     }
@@ -204,22 +243,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const cryptoAsset =
-      walletKey === "USDT_TRC20" ||
-      walletKey === "USDT_ERC20"
-        ? "USDT"
-        : walletKey;
-
-    const deposit = await Deposit.create({
-      userId: user._id,
-      amount,
-      cryptoAsset,
-      network: selectedWallet.network,
-      walletAddress: selectedWallet.address,
-      transactionHash,
-      receiptUrl,
-      status: "processing",
-    });
+    const deposit =
+      await Deposit.create({
+        userId: user._id,
+        amount,
+        cryptoAsset:
+          selectedWallet.symbol,
+        network:
+          selectedWallet.network,
+        walletAddress:
+          selectedWallet.address,
+        transactionHash,
+        receiptUrl,
+        status: "processing",
+      });
 
     return NextResponse.json(
       {
@@ -232,7 +269,10 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("Create deposit error:", error);
+    console.error(
+      "Create deposit error:",
+      error
+    );
 
     return NextResponse.json(
       {

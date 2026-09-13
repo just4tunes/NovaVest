@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowRight,
+  BriefcaseBusiness,
   CircleDollarSign,
   Clock3,
   Landmark,
@@ -13,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { BrokerageOverview } from "@/components/brokerage-overview";
 import { PerformanceChart } from "@/components/performance-chart";
 
 type UserProfile = {
@@ -21,6 +23,8 @@ type UserProfile = {
   email: string;
   depositBalance: number;
   profitBalance: number;
+  investmentBalance: number;
+  availableBalance: number;
   totalBalance: number;
   accountStatus: "active" | "suspended";
 };
@@ -31,16 +35,13 @@ type Deposit = {
   cryptoAsset: string;
   network: string;
   transactionHash: string;
-  status:
-    | "processing"
-    | "approved"
-    | "rejected";
+  status: "processing" | "approved" | "rejected";
   createdAt: string;
 };
 
 type Transaction = {
   _id: string;
-  type: "deposit" | "profit";
+  type: "deposit" | "profit" | "withdrawal" | "investment" | "adjustment";
   amount: number;
   description: string;
   reference: string;
@@ -67,7 +68,7 @@ function formatMoney(amount: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(Math.abs(amount));
 }
 
 function initials(name: string) {
@@ -79,102 +80,121 @@ function initials(name: string) {
     .join("");
 }
 
+function transactionTitle(type: Transaction["type"]) {
+  switch (type) {
+    case "profit":
+      return "Profit awarded";
+
+    case "withdrawal":
+      return "Withdrawal confirmed";
+
+    case "investment":
+      return "Investment started";
+
+    case "adjustment":
+      return "Balance adjustment";
+
+    default:
+      return "Deposit approved";
+  }
+}
+
+function amountPrefix(amount: number) {
+  if (amount > 0) {
+    return "+";
+  }
+
+  if (amount < 0) {
+    return "-";
+  }
+
+  return "";
+}
+
 export function UserDashboard() {
-  const [profile, setProfile] =
-    useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const [deposits, setDeposits] = useState<
-    Deposit[]
-  >([]);
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
 
-  const [transactions, setTransactions] =
-    useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [chartData, setChartData] = useState<
-    ChartPoint[]
-  >([]);
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
 
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [
-          profileResponse,
-          activityResponse,
-          performanceResponse,
-        ] = await Promise.all([
-          fetch("/api/user/profile", {
-            cache: "no-store",
-          }),
+        setLoading(true);
+        setError("");
 
-          fetch("/api/user/transactions", {
-            cache: "no-store",
-          }),
+        const [profileResponse, activityResponse, performanceResponse] =
+          await Promise.all([
+            fetch(`/api/user/profile?refresh=${Date.now()}`, {
+              cache: "no-store",
+            }),
 
-          fetch("/api/user/performance", {
-            cache: "no-store",
-          }),
-        ]);
+            fetch(`/api/user/transactions?refresh=${Date.now()}`, {
+              cache: "no-store",
+            }),
 
-        const profileData =
-          await profileResponse.json();
+            fetch(`/api/user/performance?refresh=${Date.now()}`, {
+              cache: "no-store",
+            }),
+          ]);
 
-        const activityData =
-          await activityResponse.json();
+        const profileData = await profileResponse.json();
 
-        const performanceData =
-          await performanceResponse.json();
+        const activityData = await activityResponse.json();
+
+        const performanceData = await performanceResponse.json();
 
         if (!profileResponse.ok) {
           throw new Error(
-            profileData.message ||
-              "Unable to load your account."
+            profileData.message || "Unable to load your account.",
           );
         }
 
         if (!activityResponse.ok) {
           throw new Error(
-            activityData.message ||
-              "Unable to load your transactions."
+            activityData.message || "Unable to load your transactions.",
           );
         }
 
         if (!performanceResponse.ok) {
           throw new Error(
-            performanceData.message ||
-              "Unable to load your performance."
+            performanceData.message || "Unable to load your performance.",
           );
         }
 
         setProfile(profileData.user);
-        setDeposits(activityData.deposits || []);
-        setTransactions(
-          activityData.transactions || []
-        );
 
-        setChartData(
-          performanceData.chartData || []
-        );
-      } catch (error) {
+        setDeposits(activityData.deposits || []);
+
+        setTransactions(activityData.transactions || []);
+
+        setChartData(performanceData.chartData || []);
+      } catch (loadError) {
         setError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load the dashboard."
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load the dashboard.",
         );
       } finally {
         setLoading(false);
       }
     }
 
-    loadDashboard();
+    void loadDashboard();
   }, []);
 
   if (loading) {
     return (
       <div className="dashboard-state">
         <LoaderCircle className="spin" size={30} />
+
         <p>Loading your account...</p>
       </div>
     );
@@ -184,51 +204,42 @@ export function UserDashboard() {
     return (
       <div className="dashboard-state dashboard-error">
         <h2>Dashboard unavailable</h2>
+
         <p>{error || "Account not found."}</p>
       </div>
     );
   }
 
   const pendingDeposits = deposits.filter(
-    (deposit) => deposit.status === "processing"
+    (deposit) => deposit.status === "processing",
   );
 
-  const depositActivities: ActivityItem[] =
-    deposits
-      .filter(
-        (deposit) =>
-          deposit.status !== "approved"
-      )
-      .map((deposit) => ({
-        id: deposit._id,
-        title: `${deposit.cryptoAsset} deposit`,
-        subtitle: deposit.network,
-        amount: deposit.amount,
-        status: deposit.status,
-        date: deposit.createdAt,
-      }));
-
-  const transactionActivities: ActivityItem[] =
-    transactions.map((transaction) => ({
-      id: transaction._id,
-      title:
-        transaction.type === "profit"
-          ? "Profit awarded"
-          : "Deposit approved",
-      subtitle: transaction.description,
-      amount: transaction.amount,
-      status: "completed",
-      date: transaction.createdAt,
+  const depositActivities: ActivityItem[] = deposits
+    .filter((deposit) => deposit.status !== "approved")
+    .map((deposit) => ({
+      id: deposit._id,
+      title: `${deposit.cryptoAsset} deposit`,
+      subtitle: deposit.network,
+      amount: deposit.amount,
+      status: deposit.status,
+      date: deposit.createdAt,
     }));
 
-  const recentActivity = [
-    ...depositActivities,
-    ...transactionActivities,
-  ]
+  const transactionActivities: ActivityItem[] = transactions.map(
+    (transaction) => ({
+      id: transaction._id,
+      title: transactionTitle(transaction.type),
+      subtitle: transaction.description,
+      amount: transaction.amount,
+      status: transaction.type === "investment" ? "active" : "completed",
+      date: transaction.createdAt,
+    }),
+  );
+
+  const recentActivity = [...depositActivities, ...transactionActivities]
     .sort(
       (first, second) =>
-        new Date(second.date).getTime() -
-        new Date(first.date).getTime()
+        new Date(second.date).getTime() - new Date(first.date).getTime(),
     )
     .slice(0, 8);
 
@@ -237,20 +248,14 @@ export function UserDashboard() {
       <header className="dashboard-header">
         <div>
           <p>
-            {new Date().toLocaleDateString(
-              "en-US",
-              {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              }
-            )}
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
 
-          <h1>
-            Welcome back,{" "}
-            {profile.name.split(" ")[0]}
-          </h1>
+          <h1>Welcome back, {profile.name.split(" ")[0]}</h1>
         </div>
 
         <Link
@@ -265,41 +270,43 @@ export function UserDashboard() {
       <section className="user-balance-grid">
         <article className="account-balance-card primary-balance-card">
           <div className="account-card-top">
-            <span>Total demo balance</span>
+            <span>Total portfolio value</span>
+
             <Wallet size={21} />
           </div>
 
-          <strong>
-            {formatMoney(profile.totalBalance)}
-          </strong>
+          <strong>{formatMoney(profile.totalBalance)}</strong>
 
-          <p>
-            Deposit balance plus awarded profits
-          </p>
+          <p>Available funds plus active investments</p>
 
-          <Link
-            href="/dashboard/deposit"
-            className="balance-card-button"
-          >
-            <ArrowDownToLine size={17} />
-            Make a deposit
+          <Link href="/dashboard/investments" className="balance-card-button">
+            <BriefcaseBusiness size={17} />
+            Explore investments
           </Link>
         </article>
 
         <article className="account-balance-card">
           <div className="account-card-top">
-            <span>Deposit balance</span>
+            <span>Available cash</span>
 
             <Landmark size={20} />
           </div>
 
-          <strong>
-            {formatMoney(
-              profile.depositBalance
-            )}
-          </strong>
+          <strong>{formatMoney(profile.availableBalance)}</strong>
 
-          <p>Approved demo deposits</p>
+          <p>Deposits and profits available</p>
+        </article>
+
+        <article className="account-balance-card">
+          <div className="account-card-top">
+            <span>Active investments</span>
+
+            <BriefcaseBusiness size={20} />
+          </div>
+
+          <strong>{formatMoney(profile.investmentBalance)}</strong>
+
+          <p>Funds currently held in plans</p>
         </article>
 
         <article className="account-balance-card">
@@ -318,38 +325,35 @@ export function UserDashboard() {
 
         <article className="account-balance-card">
           <div className="account-card-top">
-            <span>Processing</span>
+            <span>Processing deposits</span>
 
             <Clock3 size={20} />
           </div>
 
-          <strong>
-            {pendingDeposits.length}
-          </strong>
+          <strong>{pendingDeposits.length}</strong>
 
           <p>
             Deposit request
-            {pendingDeposits.length === 1
-              ? ""
-              : "s"}{" "}
-            awaiting review
+            {pendingDeposits.length === 1 ? "" : "s"} awaiting review
           </p>
         </article>
       </section>
+
+      <BrokerageOverview
+        depositBalance={profile.depositBalance}
+        profitBalance={profile.profitBalance}
+        investmentBalance={profile.investmentBalance}
+      />
 
       <section className="user-dashboard-grid">
         <article className="dashboard-panel performance-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Demo performance
-              </span>
+              <span className="panel-eyebrow">Demo performance</span>
 
               <h2>Deposits and profits</h2>
 
-              <p>
-                Your cumulative account activity
-              </p>
+              <p>Your cumulative account activity</p>
             </div>
 
             <CircleDollarSign size={23} />
@@ -361,9 +365,7 @@ export function UserDashboard() {
         <article className="dashboard-panel quick-action-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Account
-              </span>
+              <span className="panel-eyebrow">Account</span>
 
               <h2>Quick actions</h2>
             </div>
@@ -377,9 +379,22 @@ export function UserDashboard() {
 
               <span>
                 <strong>Deposit funds</strong>
-                <small>
-                  Submit a demo crypto deposit
-                </small>
+
+                <small>Submit a demo crypto deposit</small>
+              </span>
+
+              <ArrowRight size={18} />
+            </Link>
+
+            <Link href="/dashboard/investments">
+              <span className="quick-action-icon">
+                <BriefcaseBusiness size={19} />
+              </span>
+
+              <span>
+                <strong>Explore investments</strong>
+
+                <small>View plans and build your portfolio</small>
               </span>
 
               <ArrowRight size={18} />
@@ -392,9 +407,8 @@ export function UserDashboard() {
 
               <span>
                 <strong>Account settings</strong>
-                <small>
-                  Update your profile and password
-                </small>
+
+                <small>Update your profile and password</small>
               </span>
 
               <ArrowRight size={18} />
@@ -403,23 +417,17 @@ export function UserDashboard() {
         </article>
       </section>
 
-      <section
-        className="dashboard-panel transaction-panel"
-        id="transactions"
-      >
+      <section className="dashboard-panel transaction-panel" id="transactions">
         <div className="panel-heading">
           <div>
-            <span className="panel-eyebrow">
-              Account activity
-            </span>
+            <span className="panel-eyebrow">Account activity</span>
 
-            <h2>Transaction history</h2>
+            <h2>Recent transactions</h2>
 
-            <p>
-              Deposits and profits recorded on your
-              account
-            </p>
+            <p>Deposits, profits, investments and withdrawals</p>
           </div>
+
+          <Link href="/dashboard/transactions">View all</Link>
         </div>
 
         {recentActivity.length === 0 ? (
@@ -428,10 +436,7 @@ export function UserDashboard() {
 
             <h3>No transactions yet</h3>
 
-            <p>
-              Your deposit and profit activity will
-              appear here.
-            </p>
+            <p>Your account activity will appear here.</p>
 
             <Link href="/dashboard/deposit">
               Submit your first demo deposit
@@ -454,17 +459,15 @@ export function UserDashboard() {
                   <tr key={`${item.id}-${item.status}`}>
                     <td>
                       <strong>{item.title}</strong>
+
                       <span>{item.subtitle}</span>
                     </td>
 
-                    <td>
-                      {new Date(
-                        item.date
-                      ).toLocaleDateString()}
-                    </td>
+                    <td>{new Date(item.date).toLocaleDateString()}</td>
 
                     <td>
-                      +{formatMoney(item.amount)}
+                      {amountPrefix(item.amount)}
+                      {formatMoney(item.amount)}
                     </td>
 
                     <td>

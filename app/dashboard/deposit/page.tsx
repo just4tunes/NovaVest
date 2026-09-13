@@ -66,46 +66,77 @@ export default function DepositPage() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    async function loadWallets() {
-      try {
-        const response = await fetch(
-          "/api/deposits",
-          {
-            cache: "no-store",
-          }
-        );
+  async function loadWallets() {
+    try {
+      setLoadingWallets(true);
+      setError("");
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-              "Unable to load deposit methods."
-          );
+      const response = await fetch(
+        `/api/deposits?refresh=${Date.now()}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
         }
+      );
 
-        setWallets(data.wallets || {});
+      const data = await response.json();
 
-        const firstWallet = Object.keys(
-          data.wallets || {}
-        )[0];
-
-        if (firstWallet) {
-          setWalletKey(firstWallet);
-        }
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load deposit methods."
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Unable to load deposit methods."
         );
-      } finally {
-        setLoadingWallets(false);
       }
-    }
 
-    loadWallets();
-  }, []);
+      const freshWallets =
+        data.wallets || {};
+
+      setWallets(freshWallets);
+
+      setWalletKey((currentKey) => {
+        if (
+          currentKey &&
+          freshWallets[currentKey]
+        ) {
+          return currentKey;
+        }
+
+        return (
+          Object.keys(freshWallets)[0] || ""
+        );
+      });
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load deposit methods."
+      );
+    } finally {
+      setLoadingWallets(false);
+    }
+  }
+
+  void loadWallets();
+
+  function refreshWhenPageIsFocused() {
+    void loadWallets();
+  }
+
+  window.addEventListener(
+    "focus",
+    refreshWhenPageIsFocused
+  );
+
+  return () => {
+    window.removeEventListener(
+      "focus",
+      refreshWhenPageIsFocused
+    );
+  };
+}, []);
 
   const selectedWallet = wallets[walletKey];
 
