@@ -320,7 +320,7 @@ export function UserDashboard() {
             {formatMoney(profile.profitBalance)}
           </strong>
 
-          <p>Profits awarded by administration</p>
+          <p>Generated Profits</p>
         </article>
 
         <article className="account-balance-card">
@@ -349,7 +349,7 @@ export function UserDashboard() {
         <article className="dashboard-panel performance-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">Demo performance</span>
+              <span className="panel-eyebrow">Portfolio performance</span>
 
               <h2>Deposits and profits</h2>
 
@@ -380,7 +380,7 @@ export function UserDashboard() {
               <span>
                 <strong>Deposit funds</strong>
 
-                <small>Submit a demo crypto deposit</small>
+                <small>Submit a crypto deposit</small>
               </span>
 
               <ArrowRight size={18} />
@@ -439,7 +439,7 @@ export function UserDashboard() {
             <p>Your account activity will appear here.</p>
 
             <Link href="/dashboard/deposit">
-              Submit your first demo deposit
+              Submit your first deposit
             </Link>
           </div>
         ) : (

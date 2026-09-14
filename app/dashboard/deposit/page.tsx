@@ -23,10 +23,7 @@ type WalletOption = {
   address: string;
 };
 
-type WalletCollection = Record<
-  string,
-  WalletOption
->;
+type WalletCollection = Record<string, WalletOption>;
 
 const walletNames: Record<string, string> = {
   BTC: "Bitcoin",
@@ -41,102 +38,87 @@ const walletNames: Record<string, string> = {
 export default function DepositPage() {
   const [wallets, setWallets] =
     useState<WalletCollection>({});
-
-  const [walletKey, setWalletKey] =
-    useState("");
-
+  const [walletKey, setWalletKey] = useState("");
   const [amount, setAmount] = useState("");
-  const [transactionHash, setTransactionHash] =
-    useState("");
-
-  const [receiptUrl, setReceiptUrl] =
-    useState("");
-
-  const [receiptName, setReceiptName] =
-    useState("");
-
+  const [receiptUrl, setReceiptUrl] = useState("");
+  const [receiptName, setReceiptName] = useState("");
   const [loadingWallets, setLoadingWallets] =
     useState(true);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-  async function loadWallets() {
-    try {
-      setLoadingWallets(true);
-      setError("");
+    async function loadWallets() {
+      try {
+        setLoadingWallets(true);
+        setError("");
 
-      const response = await fetch(
-        `/api/deposits?refresh=${Date.now()}`,
-        {
-          method: "GET",
-          cache: "no-store",
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to load deposit methods."
+        const response = await fetch(
+          `/api/deposits?refresh=${Date.now()}`,
+          {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }
         );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Unable to load deposit methods."
+          );
+        }
+
+        const freshWallets: WalletCollection =
+          data.wallets || {};
+
+        setWallets(freshWallets);
+
+        setWalletKey((currentKey) => {
+          if (
+            currentKey &&
+            freshWallets[currentKey]
+          ) {
+            return currentKey;
+          }
+
+          return Object.keys(freshWallets)[0] || "";
+        });
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load deposit methods."
+        );
+      } finally {
+        setLoadingWallets(false);
       }
-
-      const freshWallets =
-        data.wallets || {};
-
-      setWallets(freshWallets);
-
-      setWalletKey((currentKey) => {
-        if (
-          currentKey &&
-          freshWallets[currentKey]
-        ) {
-          return currentKey;
-        }
-
-        return (
-          Object.keys(freshWallets)[0] || ""
-        );
-      });
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load deposit methods."
-      );
-    } finally {
-      setLoadingWallets(false);
     }
-  }
 
-  void loadWallets();
-
-  function refreshWhenPageIsFocused() {
     void loadWallets();
-  }
 
-  window.addEventListener(
-    "focus",
-    refreshWhenPageIsFocused
-  );
+    function refreshWhenPageIsFocused() {
+      void loadWallets();
+    }
 
-  return () => {
-    window.removeEventListener(
+    window.addEventListener(
       "focus",
       refreshWhenPageIsFocused
     );
-  };
-}, []);
+
+    return () => {
+      window.removeEventListener(
+        "focus",
+        refreshWhenPageIsFocused
+      );
+    };
+  }, []);
 
   const selectedWallet = wallets[walletKey];
 
@@ -170,9 +152,7 @@ export default function DepositPage() {
     }
 
     if (!file.type.startsWith("image/")) {
-      setError(
-        "The receipt must be an image file."
-      );
+      setError("The receipt must be an image file.");
       event.target.value = "";
       return;
     }
@@ -207,31 +187,30 @@ export default function DepositPage() {
     setError("");
     setSuccess("");
 
+    if (!walletKey) {
+      setError("Select a deposit method.");
+      return;
+    }
+
     if (!receiptUrl) {
-      setError(
-        "Upload your demo payment receipt."
-      );
+      setError("Upload your payment receipt.");
       return;
     }
 
     try {
       setSubmitting(true);
 
-      const response = await fetch(
-        "/api/deposits",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            walletKey,
-            amount,
-            transactionHash,
-            receiptUrl,
-          }),
-        }
-      );
+      const response = await fetch("/api/deposits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walletKey,
+          amount,
+          receiptUrl,
+        }),
+      });
 
       const data = await response.json();
 
@@ -243,11 +222,12 @@ export default function DepositPage() {
       }
 
       setSuccess(
-        "Your demo deposit was submitted successfully and is now processing."
+        `Your deposit was submitted successfully. Reference: ${
+          data.deposit?.transactionHash || "Generated"
+        }`
       );
 
       setAmount("");
-      setTransactionHash("");
       setReceiptName("");
       setReceiptUrl("");
     } catch (error) {
@@ -273,11 +253,11 @@ export default function DepositPage() {
             Back to overview
           </Link>
 
-          <h1>Make a demo deposit</h1>
+          <h1>Make a deposit</h1>
 
           <p>
-            Select a testnet asset and submit your
-            simulated payment information.
+            Select an asset and submit your payment
+            information.
           </p>
         </div>
       </header>
@@ -302,6 +282,7 @@ export default function DepositPage() {
                 className="spin"
                 size={25}
               />
+
               Loading deposit methods...
             </div>
           ) : (
@@ -339,12 +320,10 @@ export default function DepositPage() {
 
           {selectedWallet && (
             <div className="wallet-address-box">
-              <span>Demo/testnet wallet address</span>
+              <span>Deposit wallet address</span>
 
               <div>
-                <code>
-                  {selectedWallet.address}
-                </code>
+                <code>{selectedWallet.address}</code>
 
                 <button
                   type="button"
@@ -376,8 +355,8 @@ export default function DepositPage() {
               <h2>Submit your deposit</h2>
 
               <p>
-                The balance remains unchanged until
-                administration approves this request.
+                Your balance will be updated after the
+                deposit is approved.
               </p>
             </div>
           </div>
@@ -419,22 +398,6 @@ export default function DepositPage() {
             </label>
 
             <label>
-              Demo transaction reference
-
-              <input
-                type="text"
-                placeholder="Enter a unique transaction ID"
-                value={transactionHash}
-                onChange={(event) =>
-                  setTransactionHash(
-                    event.target.value
-                  )
-                }
-                required
-              />
-            </label>
-
-            <label>
               Payment receipt
 
               <span className="receipt-upload">
@@ -455,6 +418,7 @@ export default function DepositPage() {
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   onChange={handleReceipt}
+                  required
                 />
               </span>
             </label>
@@ -463,7 +427,9 @@ export default function DepositPage() {
               type="submit"
               className="dashboard-submit-button"
               disabled={
-                submitting || loadingWallets
+                submitting ||
+                loadingWallets ||
+                !selectedWallet
               }
             >
               {submitting ? (
@@ -475,7 +441,7 @@ export default function DepositPage() {
                   Submitting...
                 </>
               ) : (
-                "Submit demo deposit"
+                "Submit Deposit"
               )}
             </button>
           </form>

@@ -115,10 +115,10 @@ export function BrokerageOverview({
 
           <h2>Markets and portfolio</h2>
 
-          <p>Simulated market information for educational purposes.</p>
+         <p>Market information</p>
         </div>
 
-        <span className="simulated-market-badge">Demo market</span>
+        <span className="simulated-market-badge">Market stats</span>
       </div>
 
       <div className="brokerage-market-grid">
@@ -301,7 +301,7 @@ export function BrokerageOverview({
           <div className="market-panel-heading">
             <div>
               <span>Market movement</span>
-              <strong>Simulated performance</strong>
+              <strong>Market performance</strong>
             </div>
           </div>
 

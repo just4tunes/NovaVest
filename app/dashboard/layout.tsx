@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { InvestmentNotification } from "@/components/investment-notification";
 import { WithdrawalNotification } from "@/components/withdrawal-notification";
 import { getCurrentUser } from "@/lib/auth";
+import { DashboardScrollAnimations } from "@/components/dashboard-scroll-animations";
 
 export default async function DashboardLayout({
   children,
@@ -20,10 +21,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <>
-      {children}
-      <WithdrawalNotification />
-      <InvestmentNotification />
-    </>
-  );
+  <>
+    <DashboardScrollAnimations />
+    {children}
+    <DashboardScrollAnimations />
+    <WithdrawalNotification />
+    <InvestmentNotification />
+  </>
+);
 }

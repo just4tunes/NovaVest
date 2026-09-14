@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
@@ -8,6 +9,20 @@ import Deposit from "@/models/Deposit";
 import User from "@/models/User";
 
 export const dynamic = "force-dynamic";
+
+function generateDepositReference() {
+  const date = new Date()
+    .toISOString()
+    .slice(0, 10)
+    .replaceAll("-", "");
+
+  const uniqueCode = randomUUID()
+    .replaceAll("-", "")
+    .slice(0, 8)
+    .toUpperCase();
+
+  return `DEP-${date}-${uniqueCode}`;
+}
 
 export async function GET() {
   try {
@@ -114,10 +129,6 @@ export async function POST(
       .trim()
       .toUpperCase();
 
-    const transactionHash = String(
-      body.transactionHash || ""
-    ).trim();
-
     const receiptUrl = String(
       body.receiptUrl || ""
     ).trim();
@@ -149,23 +160,11 @@ export async function POST(
       );
     }
 
-    if (!transactionHash) {
-      return NextResponse.json(
-        {
-          message:
-            "Enter the demo transaction reference.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
     if (!receiptUrl) {
       return NextResponse.json(
         {
           message:
-            "Upload the demo payment receipt.",
+            "Upload your payment receipt.",
         },
         {
           status: 400,
@@ -226,22 +225,8 @@ export async function POST(
       );
     }
 
-    const existingReference =
-      await Deposit.findOne({
-        transactionHash,
-      });
-
-    if (existingReference) {
-      return NextResponse.json(
-        {
-          message:
-            "This transaction reference has already been submitted.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
+    const transactionHash =
+      generateDepositReference();
 
     const deposit =
       await Deposit.create({
@@ -261,7 +246,7 @@ export async function POST(
     return NextResponse.json(
       {
         message:
-          "Your demo deposit was submitted and is processing.",
+          "Your deposit was submitted and is processing.",
         deposit,
       },
       {

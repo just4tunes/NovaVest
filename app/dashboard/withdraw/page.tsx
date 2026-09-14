@@ -9,12 +9,7 @@ import {
   Send,
   ShieldAlert,
 } from "lucide-react";
-import {
-  FormEvent,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 
@@ -32,10 +27,7 @@ type Withdrawal = {
   cryptoAsset: string;
   network: string;
   walletAddress: string;
-  status:
-    | "processing"
-    | "on_the_way"
-    | "blocked";
+  status: "processing" | "on_the_way" | "blocked";
   adminMessage: string;
   createdAt: string;
 };
@@ -57,9 +49,7 @@ function formatMoney(amount: number) {
   }).format(amount);
 }
 
-function statusText(
-  status: Withdrawal["status"]
-) {
+function statusText(status: Withdrawal["status"]) {
   if (status === "on_the_way") {
     return "Funds on the way";
   }
@@ -72,100 +62,71 @@ function statusText(
 }
 
 export default function WithdrawPage() {
-  const [wallets, setWallets] =
-    useState<Wallet[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
 
-  const [withdrawals, setWithdrawals] =
-    useState<Withdrawal[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
 
-  const [account, setAccount] =
-    useState<Account | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
 
-  const [walletKey, setWalletKey] =
-    useState("");
+  const [walletKey, setWalletKey] = useState("");
 
-  const [walletAddress, setWalletAddress] =
-    useState("");
+  const [walletAddress, setWalletAddress] = useState("");
 
-  const [amount, setAmount] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [success, setSuccess] =
-    useState("");
+  const [success, setSuccess] = useState("");
 
-  const loadWithdrawals = useCallback(
-    async () => {
-      try {
-        setError("");
+  const loadWithdrawals = useCallback(async () => {
+    try {
+      setError("");
 
-        const response = await fetch(
-          `/api/withdrawals?refresh=${Date.now()}`,
-          {
-            cache: "no-store",
-          }
-        );
+      const response = await fetch(`/api/withdrawals?refresh=${Date.now()}`, {
+        cache: "no-store",
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-              "Unable to load withdrawals."
-          );
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to load withdrawals.");
+      }
+
+      const freshWallets = data.wallets || [];
+
+      setWallets(freshWallets);
+      setWithdrawals(data.withdrawals || []);
+      setAccount(data.account || null);
+
+      setWalletKey((current) => {
+        if (
+          current &&
+          freshWallets.some((wallet: Wallet) => wallet.key === current)
+        ) {
+          return current;
         }
 
-        const freshWallets =
-          data.wallets || [];
-
-        setWallets(freshWallets);
-        setWithdrawals(
-          data.withdrawals || []
-        );
-        setAccount(data.account || null);
-
-        setWalletKey((current) => {
-          if (
-            current &&
-            freshWallets.some(
-              (wallet: Wallet) =>
-                wallet.key === current
-            )
-          ) {
-            return current;
-          }
-
-          return freshWallets[0]?.key || "";
-        });
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load withdrawals."
-        );
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+        return freshWallets[0]?.key || "";
+      });
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Unable to load withdrawals.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadWithdrawals();
   }, [loadWithdrawals]);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     try {
@@ -173,29 +134,22 @@ export default function WithdrawPage() {
       setError("");
       setSuccess("");
 
-      const response = await fetch(
-        "/api/withdrawals",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            amount,
-            walletKey,
-            walletAddress,
-          }),
-        }
-      );
+      const response = await fetch("/api/withdrawals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount,
+          walletKey,
+          walletAddress,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to submit withdrawal."
-        );
+        throw new Error(data.message || "Unable to submit withdrawal.");
       }
 
       setSuccess(data.message);
@@ -205,9 +159,7 @@ export default function WithdrawPage() {
       await loadWithdrawals();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to submit withdrawal."
+        error instanceof Error ? error.message : "Unable to submit withdrawal.",
       );
     } finally {
       setSubmitting(false);
@@ -218,10 +170,7 @@ export default function WithdrawPage() {
     return (
       <AppShell mode="user">
         <div className="dashboard-state">
-          <LoaderCircle
-            className="spin"
-            size={30}
-          />
+          <LoaderCircle className="spin" size={30} />
 
           <p>Loading withdrawals...</p>
         </div>
@@ -233,19 +182,15 @@ export default function WithdrawPage() {
     <AppShell mode="user">
       <header className="dashboard-header">
         <div>
-          <Link
-            href="/dashboard"
-            className="page-back-link"
-          >
+          <Link href="/dashboard" className="page-back-link">
             <ArrowLeft size={16} />
             Back to overview
           </Link>
 
           <h1>Withdraw funds</h1>
 
-          <p>
-            Submit a demo withdrawal to your
-            receiving crypto wallet.
+          <p className="mobile-hide-subtext">
+            Submit a withdrawal to your receiving crypto wallet.
           </p>
         </div>
 
@@ -254,17 +199,9 @@ export default function WithdrawPage() {
         </div>
       </header>
 
-      {error && (
-        <div className="form-message form-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="form-message form-error">{error}</div>}
 
-      {success && (
-        <div className="form-message form-success">
-          {success}
-        </div>
-      )}
+      {success && <div className="form-message form-success">{success}</div>}
 
       {account?.withdrawalsBlocked && (
         <div className="form-message form-error">
@@ -277,32 +214,19 @@ export default function WithdrawPage() {
 
       <section className="admin-metrics">
         <article className="summary-card">
-          <strong>
-            {formatMoney(
-              account?.totalBalance || 0
-            )}
-          </strong>
+          <strong>{formatMoney(account?.totalBalance || 0)}</strong>
 
           <span>Total balance</span>
         </article>
 
         <article className="summary-card">
-          <strong>
-            {formatMoney(
-              account?.processingTotal || 0
-            )}
-          </strong>
+          <strong>{formatMoney(account?.processingTotal || 0)}</strong>
 
           <span>Processing</span>
         </article>
 
         <article className="summary-card">
-          <strong>
-            {formatMoney(
-              account?.availableToWithdraw ||
-                0
-            )}
-          </strong>
+          <strong>{formatMoney(account?.availableToWithdraw || 0)}</strong>
 
           <span>Available to withdraw</span>
         </article>
@@ -312,9 +236,7 @@ export default function WithdrawPage() {
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Withdrawal method
-              </span>
+              <span className="panel-eyebrow">Withdrawal method</span>
 
               <h2>Select an asset</h2>
             </div>
@@ -326,26 +248,16 @@ export default function WithdrawPage() {
                 type="button"
                 key={wallet._id}
                 className={`crypto-option ${
-                  walletKey === wallet.key
-                    ? "selected"
-                    : ""
+                  walletKey === wallet.key ? "selected" : ""
                 }`}
-                onClick={() =>
-                  setWalletKey(wallet.key)
-                }
+                onClick={() => setWalletKey(wallet.key)}
               >
-                <span className="crypto-symbol">
-                  {wallet.symbol}
-                </span>
+                <span className="crypto-symbol">{wallet.symbol}</span>
 
                 <span>
-                  <strong>
-                    {wallet.name}
-                  </strong>
+                  <strong>{wallet.name}</strong>
 
-                  <small>
-                    {wallet.network}
-                  </small>
+                  <small>{wallet.network}</small>
                 </span>
               </button>
             ))}
@@ -355,62 +267,40 @@ export default function WithdrawPage() {
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Withdrawal details
-              </span>
+              <span className="panel-eyebrow">Withdrawal details</span>
 
               <h2>Request withdrawal</h2>
 
-              <p>
-                Profit balance is used first,
-                followed by deposit balance.
+              <p className="mobile-hide-subtext">
+                Profit balance is used first, followed by deposit balance.
               </p>
             </div>
           </div>
 
-          <form
-            className="dashboard-form"
-            onSubmit={handleSubmit}
-          >
+          <form className="dashboard-form" onSubmit={handleSubmit}>
             <label>
               Amount in USD
-
               <input
                 type="number"
                 min="1"
                 step="0.01"
-                max={
-                  account?.availableToWithdraw
-                }
+                max={account?.availableToWithdraw}
                 placeholder="Example: 500"
                 value={amount}
-                onChange={(event) =>
-                  setAmount(
-                    event.target.value
-                  )
-                }
-                disabled={
-                  account?.withdrawalsBlocked
-                }
+                onChange={(event) => setAmount(event.target.value)}
+                disabled={account?.withdrawalsBlocked}
                 required
               />
             </label>
 
             <label>
               Receiving wallet address
-
               <input
                 type="text"
                 placeholder="Enter your receiving wallet"
                 value={walletAddress}
-                onChange={(event) =>
-                  setWalletAddress(
-                    event.target.value
-                  )
-                }
-                disabled={
-                  account?.withdrawalsBlocked
-                }
+                onChange={(event) => setWalletAddress(event.target.value)}
+                disabled={account?.withdrawalsBlocked}
                 required
               />
             </label>
@@ -418,17 +308,11 @@ export default function WithdrawPage() {
             <button
               type="submit"
               className="dashboard-submit-button"
-              disabled={
-                submitting ||
-                account?.withdrawalsBlocked
-              }
+              disabled={submitting || account?.withdrawalsBlocked}
             >
               {submitting ? (
                 <>
-                  <LoaderCircle
-                    className="spin"
-                    size={18}
-                  />
+                  <LoaderCircle className="spin" size={18} />
                   Submitting...
                 </>
               ) : (
@@ -445,9 +329,7 @@ export default function WithdrawPage() {
       <section className="dashboard-panel admin-section">
         <div className="panel-heading">
           <div>
-            <span className="panel-eyebrow">
-              Withdrawal history
-            </span>
+            <span className="panel-eyebrow">Withdrawal history</span>
 
             <h2>Your requests</h2>
           </div>
@@ -455,9 +337,7 @@ export default function WithdrawPage() {
           <button
             type="button"
             className="receipt-button"
-            onClick={() =>
-              void loadWithdrawals()
-            }
+            onClick={() => void loadWithdrawals()}
           >
             Refresh
           </button>
@@ -483,58 +363,33 @@ export default function WithdrawPage() {
               </thead>
 
               <tbody>
-                {withdrawals.map(
-                  (withdrawal) => (
-                    <tr key={withdrawal._id}>
-                      <td>
-                        <strong>
-                          {
-                            withdrawal.cryptoAsset
-                          }
-                        </strong>
+                {withdrawals.map((withdrawal) => (
+                  <tr key={withdrawal._id}>
+                    <td>
+                      <strong>{withdrawal.cryptoAsset}</strong>
 
-                        <small>
-                          {withdrawal.network}
-                        </small>
-                      </td>
+                      <small>{withdrawal.network}</small>
+                    </td>
 
-                      <td>
-                        {formatMoney(
-                          withdrawal.amount
-                        )}
-                      </td>
+                    <td>{formatMoney(withdrawal.amount)}</td>
 
-                      <td>
-                        <code>
-                          {
-                            withdrawal.walletAddress
-                          }
-                        </code>
-                      </td>
+                    <td>
+                      <code>{withdrawal.walletAddress}</code>
+                    </td>
 
-                      <td>
-                        <span
-                          className={`status status-${withdrawal.status}`}
-                        >
-                          {statusText(
-                            withdrawal.status
-                          )}
-                        </span>
-                      </td>
+                    <td>
+                      <span className={`status status-${withdrawal.status}`}>
+                        {statusText(withdrawal.status)}
+                      </span>
+                    </td>
 
-                      <td>
-                        {withdrawal.adminMessage ||
-                          "No message"}
-                      </td>
+                    <td>{withdrawal.adminMessage || "No message"}</td>
 
-                      <td>
-                        {new Date(
-                          withdrawal.createdAt
-                        ).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  )
-                )}
+                    <td>
+                      {new Date(withdrawal.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

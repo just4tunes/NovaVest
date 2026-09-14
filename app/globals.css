@@ -4898,3 +4898,768 @@ td span {
     grid-column: 1 / -1;
   }
 }
+
+
+@media (max-width: 700px) {
+  .mobile-hide-subtext {
+    display: none;
+  }
+}
+
+
+
+/* ========================================
+   NOVAVEST DASHBOARD VISUAL UPGRADE
+======================================== */
+
+:root {
+  --dashboard-navy: #071c35;
+  --dashboard-navy-soft: #102b4e;
+  --dashboard-blue: #168bdc;
+  --dashboard-blue-light: #e8f4fd;
+  --dashboard-green: #2ed194;
+  --dashboard-green-dark: #159568;
+  --dashboard-surface: #ffffff;
+  --dashboard-background: #f3f7fc;
+  --dashboard-border: #dce6f1;
+  --dashboard-text: #14213d;
+  --dashboard-muted: #748198;
+}
+
+/* Main dashboard panels */
+
+.dashboard-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 20px;
+  background: var(--dashboard-surface);
+  box-shadow: 0 12px 35px rgba(7, 28, 53, 0.06);
+  animation: dashboard-rise 0.55s ease both;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.dashboard-panel:hover {
+  transform: translateY(-3px);
+  border-color: rgba(22, 139, 220, 0.25);
+  box-shadow: 0 18px 45px rgba(7, 28, 53, 0.1);
+}
+
+.dashboard-header {
+  animation: dashboard-rise 0.45s ease both;
+}
+
+.dashboard-header h1 {
+  color: var(--dashboard-text);
+  letter-spacing: -0.035em;
+}
+
+.dashboard-header p,
+.dashboard-header span {
+  color: var(--dashboard-muted);
+}
+
+.page-back-link {
+  color: var(--dashboard-blue);
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.page-back-link:hover {
+  color: var(--dashboard-green-dark);
+  transform: translateX(-3px);
+}
+
+.panel-eyebrow {
+  color: var(--dashboard-blue);
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.panel-heading h2 {
+  color: var(--dashboard-text);
+}
+
+.panel-heading p {
+  color: var(--dashboard-muted);
+}
+
+/* Balance and summary cards */
+
+.admin-metrics {
+  gap: 18px;
+}
+
+.summary-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 145px;
+  padding: 24px;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(22, 139, 220, 0.12),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #ffffff, #f7fbff);
+  box-shadow: 0 12px 30px rgba(7, 28, 53, 0.06);
+  animation: dashboard-rise 0.55s ease both;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.summary-card::after {
+  position: absolute;
+  z-index: -1;
+  right: -32px;
+  bottom: -42px;
+  width: 115px;
+  height: 115px;
+  border-radius: 999px;
+  background: rgba(46, 209, 148, 0.1);
+  content: "";
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(46, 209, 148, 0.38);
+  box-shadow: 0 20px 45px rgba(7, 28, 53, 0.11);
+}
+
+.summary-card strong {
+  color: var(--dashboard-navy);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  letter-spacing: -0.045em;
+}
+
+.summary-card > span {
+  color: var(--dashboard-muted);
+  font-weight: 600;
+}
+
+.summary-card .card-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--dashboard-blue),
+    #30a7ed
+  );
+  color: white;
+  box-shadow: 0 8px 20px rgba(22, 139, 220, 0.2);
+}
+
+/* Staggered card entrance */
+
+.admin-metrics .summary-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.admin-metrics .summary-card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.admin-metrics .summary-card:nth-child(3) {
+  animation-delay: 0.19s;
+}
+
+.admin-metrics .summary-card:nth-child(4) {
+  animation-delay: 0.26s;
+}
+
+.deposit-page-grid > :nth-child(1) {
+  animation-delay: 0.08s;
+}
+
+.deposit-page-grid > :nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+/* Forms and interactive elements */
+
+.dashboard-form input,
+.dashboard-form select,
+.dashboard-form textarea {
+  border-color: var(--dashboard-border);
+  background: #f8fbff;
+  color: var(--dashboard-text);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dashboard-form input:focus,
+.dashboard-form select:focus,
+.dashboard-form textarea:focus {
+  border-color: var(--dashboard-blue);
+  outline: none;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(22, 139, 220, 0.11);
+  transform: translateY(-1px);
+}
+
+.dashboard-submit-button {
+  border: 0;
+  background: linear-gradient(
+    135deg,
+    var(--dashboard-green),
+    #22bd82
+  );
+  color: var(--dashboard-navy);
+  box-shadow: 0 10px 25px rgba(46, 209, 148, 0.22);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.dashboard-submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 15px 32px rgba(46, 209, 148, 0.3);
+}
+
+.dashboard-submit-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.crypto-option {
+  border-color: var(--dashboard-border);
+  background: #f8fbff;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.crypto-option:hover {
+  transform: translateY(-2px);
+  border-color: rgba(22, 139, 220, 0.45);
+  box-shadow: 0 9px 22px rgba(7, 28, 53, 0.08);
+}
+
+.crypto-option.selected {
+  border-color: var(--dashboard-blue);
+  background: var(--dashboard-blue-light);
+  box-shadow: 0 0 0 3px rgba(22, 139, 220, 0.09);
+}
+
+.crypto-symbol {
+  background: var(--dashboard-navy);
+  color: white;
+}
+
+/* Tables */
+
+.responsive-table {
+  border-radius: 14px;
+}
+
+.admin-live-table thead {
+  background: var(--dashboard-navy);
+}
+
+.admin-live-table thead th {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.admin-live-table tbody tr {
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-live-table tbody tr:hover {
+  background: #f1f8fd;
+}
+
+/* Status and messages */
+
+.form-success {
+  border-color: rgba(46, 209, 148, 0.32);
+  background: #ecfbf5;
+  color: #11734f;
+}
+
+.status-approved,
+.status-completed,
+.status-on_the_way {
+  background: #e9faf3;
+  color: #137852;
+}
+
+.status-processing {
+  background: #fff7e7;
+  color: #986512;
+}
+
+/* Page entrance animation */
+
+@keyframes dashboard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile dashboard improvements */
+
+@media (max-width: 700px) {
+  .mobile-hide-subtext {
+    display: none;
+  }
+
+  .dashboard-header {
+    margin-bottom: 20px;
+  }
+
+  .dashboard-header h1 {
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
+    line-height: 1.12;
+  }
+
+  .dashboard-panel {
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(7, 28, 53, 0.07);
+  }
+
+  .dashboard-panel:hover,
+  .summary-card:hover {
+    transform: none;
+  }
+
+  .admin-metrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summary-card {
+    min-height: 118px;
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .summary-card strong {
+    font-size: 1.65rem;
+  }
+
+  .panel-heading p.mobile-hide-subtext {
+    display: none;
+  }
+
+  .responsive-table {
+    overflow-x: auto;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-live-table {
+    min-width: 760px;
+  }
+}
+
+/* Respect accessibility settings */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-header,
+  .dashboard-panel,
+  .summary-card {
+    animation: none;
+  }
+
+  .dashboard-panel,
+  .summary-card,
+  .crypto-option,
+  .dashboard-submit-button,
+  .page-back-link {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
+
+
+/* ========================================
+   USER OVERVIEW PREMIUM STYLING
+======================================== */
+
+.dashboard-header h1,
+.account-balance-card strong,
+.market-panel-heading strong,
+.panel-heading h2 {
+  font-family:
+    "Segoe UI Variable",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+
+/* Welcome section */
+
+.dashboard-header {
+  position: relative;
+  padding: 24px 28px;
+  border: 1px solid rgba(22, 139, 220, 0.14);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(46, 209, 148, 0.15),
+      transparent 30%
+    ),
+    linear-gradient(135deg, #ffffff, #f1f8ff);
+  box-shadow: 0 15px 40px rgba(7, 28, 53, 0.07);
+}
+
+.dashboard-header > div:first-child > p {
+  margin-bottom: 8px;
+  color: #168bdc;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: #071c35;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+}
+
+.dashboard-header .avatar {
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #168bdc, #2ed194);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(22, 139, 220, 0.25);
+}
+
+/* Balance grid */
+
+.user-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.account-balance-card {
+  position: relative;
+  isolation: isolate;
+  grid-column: span 2;
+  overflow: hidden;
+  min-height: 185px;
+  padding: 23px;
+  border: 1px solid #dce7f2;
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(22, 139, 220, 0.13),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #ffffff, #f7fbff);
+  box-shadow: 0 13px 34px rgba(7, 28, 53, 0.07);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.account-balance-card::before {
+  position: absolute;
+  z-index: -1;
+  right: -40px;
+  bottom: -52px;
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  background: rgba(46, 209, 148, 0.1);
+  content: "";
+}
+
+.account-balance-card::after {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  left: 24px;
+  height: 3px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(90deg, #168bdc, #2ed194);
+  content: "";
+  opacity: 0.8;
+}
+
+.account-balance-card:hover {
+  border-color: rgba(22, 139, 220, 0.32);
+  box-shadow: 0 20px 45px rgba(7, 28, 53, 0.12);
+  transform: translateY(-5px);
+}
+
+.primary-balance-card {
+  grid-column: span 4;
+  min-height: 215px;
+  background:
+    radial-gradient(
+      circle at 90% 15%,
+      rgba(46, 209, 148, 0.24),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 15% 100%,
+      rgba(22, 139, 220, 0.3),
+      transparent 40%
+    ),
+    linear-gradient(135deg, #071c35, #102f56);
+  color: #ffffff;
+  box-shadow: 0 20px 50px rgba(7, 28, 53, 0.24);
+}
+
+.primary-balance-card::before {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.primary-balance-card::after {
+  background: linear-gradient(90deg, #2ed194, #58e7b2);
+}
+
+.account-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.account-card-top > span {
+  color: #66758d;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.account-card-top svg {
+  box-sizing: content-box;
+  padding: 10px;
+  border-radius: 12px;
+  background: #e8f4fd;
+  color: #168bdc;
+}
+
+.account-balance-card > strong {
+  display: block;
+  margin-top: 25px;
+  color: #071c35;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.account-balance-card > p {
+  margin: 12px 0 0;
+  color: #758198;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.primary-balance-card .account-card-top > span,
+.primary-balance-card > p {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.primary-balance-card .account-card-top svg {
+  background: rgba(255, 255, 255, 0.1);
+  color: #4ce0aa;
+}
+
+.primary-balance-card > strong {
+  color: #ffffff;
+  font-size: clamp(2.4rem, 5vw, 3.7rem);
+}
+
+.account-balance-card .profit-value {
+  color: #159568;
+}
+
+.balance-card-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 11px 15px;
+  border-radius: 11px;
+  background: #2ed194;
+  color: #071c35;
+  font-size: 0.76rem;
+  font-weight: 850;
+  box-shadow: 0 9px 22px rgba(46, 209, 148, 0.22);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.balance-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 28px rgba(46, 209, 148, 0.3);
+}
+
+/* Individual card accents */
+
+.account-balance-card:nth-child(2) .account-card-top svg {
+  background: #e9f5ff;
+  color: #168bdc;
+}
+
+.account-balance-card:nth-child(3) .account-card-top svg {
+  background: #eeeafe;
+  color: #7058d6;
+}
+
+.account-balance-card:nth-child(4) .account-card-top svg {
+  background: #e8faf3;
+  color: #159568;
+}
+
+.account-balance-card:nth-child(5) .account-card-top svg {
+  background: #fff5df;
+  color: #b57a14;
+}
+
+/* Brokerage headings */
+
+.brokerage-section-heading h2 {
+  color: #071c35;
+  font-size: clamp(1.7rem, 3vw, 2.25rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+
+.brokerage-section-heading p {
+  color: #758198;
+  font-weight: 500;
+}
+
+.simulated-market-badge {
+  border: 1px solid rgba(46, 209, 148, 0.28);
+  background: #e9faf3;
+  color: #117652;
+  font-weight: 800;
+}
+
+/* Repeatable scroll reveal */
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px) scale(0.985);
+  transition:
+    opacity 0.65s ease var(--reveal-delay, 0ms),
+    transform 0.65s
+      cubic-bezier(0.22, 1, 0.36, 1)
+      var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.scroll-reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.admin-live-table tbody tr.scroll-reveal,
+.user-transaction-table tbody tr.scroll-reveal,
+.market-watchlist-row.scroll-reveal {
+  transform: translateX(-18px);
+}
+
+.admin-live-table tbody tr.scroll-reveal-visible,
+.user-transaction-table tbody tr.scroll-reveal-visible,
+.market-watchlist-row.scroll-reveal-visible {
+  transform: translateX(0);
+}
+
+/* Responsive balance layout */
+
+@media (max-width: 1050px) {
+  .user-balance-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .primary-balance-card {
+    grid-column: 1 / -1;
+  }
+
+  .account-balance-card {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-header {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .user-balance-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .primary-balance-card,
+  .account-balance-card {
+    grid-column: 1;
+    min-height: 155px;
+    padding: 20px;
+    border-radius: 17px;
+  }
+
+  .primary-balance-card {
+    min-height: 205px;
+  }
+
+  .primary-balance-card > strong {
+    font-size: 2.5rem;
+  }
+
+  .account-balance-card > strong {
+    margin-top: 20px;
+    font-size: 1.8rem;
+  }
+
+  .account-balance-card:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal.scroll-reveal-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
