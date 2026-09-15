@@ -307,7 +307,7 @@ export default function ProfilePage() {
 
               <input
                 type="tel"
-                placeholder="+234..."
+                placeholder="+1"
                 value={phone}
                 onChange={(event) =>
                   setPhone(event.target.value)
@@ -320,7 +320,7 @@ export default function ProfilePage() {
 
               <input
                 type="text"
-                placeholder="Nigeria"
+                placeholder="country"
                 value={country}
                 onChange={(event) =>
                   setCountry(event.target.value)

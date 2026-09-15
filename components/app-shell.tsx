@@ -1,20 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
+import {
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  BriefcaseBusiness,
+  ChartNoAxesCombined,
   LayoutDashboard,
   LoaderCircle,
   LogOut,
   ReceiptText,
   Settings,
+  UserRound,
   Users,
   WalletCards,
-  BriefcaseBusiness,
-  ChartNoAxesCombined,
 } from "lucide-react";
 
 import { brand } from "@/lib/brand";
@@ -24,10 +31,15 @@ type AppShellProps = {
   mode?: "user" | "admin";
 };
 
-export function AppShell({ children, mode = "user" }: AppShellProps) {
+export function AppShell({
+  children,
+  mode = "user",
+}: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [loggingOut, setLoggingOut] = useState(false);
+
+  const [loggingOut, setLoggingOut] =
+    useState(false);
 
   const userNavigation = [
     {
@@ -45,7 +57,6 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
       href: "/dashboard/withdraw",
       icon: ArrowUpFromLine,
     },
-
     {
       label: "Investments",
       href: "/dashboard/investments",
@@ -63,6 +74,34 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
     },
   ];
 
+  const mobileUserNavigation = [
+    {
+      label: "Overview",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Deposit",
+      href: "/dashboard/deposit",
+      icon: ArrowDownToLine,
+    },
+    {
+      label: "Invest",
+      href: "/dashboard/investments",
+      icon: BriefcaseBusiness,
+    },
+    {
+      label: "Withdraw",
+      href: "/dashboard/withdraw",
+      icon: ArrowUpFromLine,
+    },
+    {
+      label: "Account",
+      href: "/dashboard/profile",
+      icon: UserRound,
+    },
+  ];
+
   const adminNavigation = [
     {
       label: "Overview",
@@ -74,25 +113,21 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
       href: "/admin/users",
       icon: Users,
     },
-
     {
       label: "Wallets",
       href: "/admin/wallets",
       icon: WalletCards,
     },
-
     {
       label: "Investment plans",
       href: "/admin/investment-plans",
       icon: BriefcaseBusiness,
     },
-
     {
       label: "Investments",
       href: "/admin/investments",
       icon: ChartNoAxesCombined,
     },
-
     {
       label: "Withdrawals",
       href: "/admin/withdrawals",
@@ -105,20 +140,21 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
     },
   ];
 
-  const navigation = mode === "admin" ? adminNavigation : userNavigation;
+  const navigation =
+    mode === "admin"
+      ? adminNavigation
+      : userNavigation;
 
   function linkIsActive(href: string) {
-    const path = href.split("#")[0];
-
-    if (path === "/dashboard") {
+    if (href === "/dashboard") {
       return pathname === "/dashboard";
     }
 
-    if (path === "/admin") {
+    if (href === "/admin") {
       return pathname === "/admin";
     }
 
-    return pathname.startsWith(path);
+    return pathname.startsWith(href);
   }
 
   async function handleLogout() {
@@ -137,29 +173,42 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
   }
 
   return (
-    <main className="application">
+    <main
+      className={`application application-${mode}`}
+    >
       <aside className="sidebar">
-        <Link href="/" className="brand sidebar-brand">
-          <span className="brand-mark">{brand.shortName || "NV"}</span>
+        <Link
+          href="/"
+          className="brand sidebar-brand"
+        >
+          <span className="brand-mark">
+            {brand.shortName || "NV"}
+          </span>
 
           <span>{brand.name}</span>
         </Link>
 
         <p className="sidebar-label">
-          {mode === "admin" ? "Administration" : "Your account"}
+          {mode === "admin"
+            ? "Administration"
+            : "Your account"}
         </p>
 
         <nav className="sidebar-navigation">
           {navigation.map((item) => {
             const Icon = item.icon;
+            const active = linkIsActive(item.href);
 
             return (
               <Link
                 key={item.label}
                 href={item.href}
                 className={`sidebar-link ${
-                  linkIsActive(item.href) ? "active" : ""
+                  active ? "active" : ""
                 }`}
+                aria-current={
+                  active ? "page" : undefined
+                }
               >
                 <Icon size={18} />
                 {item.label}
@@ -175,16 +224,54 @@ export function AppShell({ children, mode = "user" }: AppShellProps) {
           disabled={loggingOut}
         >
           {loggingOut ? (
-            <LoaderCircle size={18} className="spin" />
+            <LoaderCircle
+              size={18}
+              className="spin"
+            />
           ) : (
             <LogOut size={18} />
           )}
 
-          {loggingOut ? "Signing out..." : "Sign out"}
+          {loggingOut
+            ? "Signing out..."
+            : "Sign out"}
         </button>
       </aside>
 
-      <div className="application-content">{children}</div>
+      <div className="application-content">
+        {children}
+      </div>
+
+      {mode === "user" && (
+        <nav
+          className="mobile-bottom-navigation"
+          aria-label="Mobile account navigation"
+        >
+          {mobileUserNavigation.map((item) => {
+            const Icon = item.icon;
+            const active = linkIsActive(item.href);
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={
+                  active ? "active" : ""
+                }
+                aria-current={
+                  active ? "page" : undefined
+                }
+              >
+                <span className="mobile-nav-icon">
+                  <Icon size={21} />
+                </span>
+
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </main>
   );
 }
