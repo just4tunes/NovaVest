@@ -9,12 +9,7 @@ import {
   Upload,
   Wallet,
 } from "lucide-react";
-import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 
@@ -36,14 +31,12 @@ const walletNames: Record<string, string> = {
 };
 
 export default function DepositPage() {
-  const [wallets, setWallets] =
-    useState<WalletCollection>({});
+  const [wallets, setWallets] = useState<WalletCollection>({});
   const [walletKey, setWalletKey] = useState("");
   const [amount, setAmount] = useState("");
   const [receiptUrl, setReceiptUrl] = useState("");
   const [receiptName, setReceiptName] = useState("");
-  const [loadingWallets, setLoadingWallets] =
-    useState(true);
+  const [loadingWallets, setLoadingWallets] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
@@ -55,36 +48,26 @@ export default function DepositPage() {
         setLoadingWallets(true);
         setError("");
 
-        const response = await fetch(
-          `/api/deposits?refresh=${Date.now()}`,
-          {
-            method: "GET",
-            cache: "no-store",
-            headers: {
-              "Cache-Control": "no-cache",
-            },
-          }
-        );
+        const response = await fetch(`/api/deposits?refresh=${Date.now()}`, {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(
-            data.message ||
-              "Unable to load deposit methods."
-          );
+          throw new Error(data.message || "Unable to load deposit methods.");
         }
 
-        const freshWallets: WalletCollection =
-          data.wallets || {};
+        const freshWallets: WalletCollection = data.wallets || {};
 
         setWallets(freshWallets);
 
         setWalletKey((currentKey) => {
-          if (
-            currentKey &&
-            freshWallets[currentKey]
-          ) {
+          if (currentKey && freshWallets[currentKey]) {
             return currentKey;
           }
 
@@ -94,7 +77,7 @@ export default function DepositPage() {
         setError(
           error instanceof Error
             ? error.message
-            : "Unable to load deposit methods."
+            : "Unable to load deposit methods.",
         );
       } finally {
         setLoadingWallets(false);
@@ -107,16 +90,10 @@ export default function DepositPage() {
       void loadWallets();
     }
 
-    window.addEventListener(
-      "focus",
-      refreshWhenPageIsFocused
-    );
+    window.addEventListener("focus", refreshWhenPageIsFocused);
 
     return () => {
-      window.removeEventListener(
-        "focus",
-        refreshWhenPageIsFocused
-      );
+      window.removeEventListener("focus", refreshWhenPageIsFocused);
     };
   }, []);
 
@@ -127,9 +104,7 @@ export default function DepositPage() {
       return;
     }
 
-    await navigator.clipboard.writeText(
-      selectedWallet.address
-    );
+    await navigator.clipboard.writeText(selectedWallet.address);
 
     setCopied(true);
 
@@ -138,9 +113,7 @@ export default function DepositPage() {
     }, 1800);
   }
 
-  function handleReceipt(
-    event: ChangeEvent<HTMLInputElement>
-  ) {
+  function handleReceipt(event: ChangeEvent<HTMLInputElement>) {
     setError("");
 
     const file = event.target.files?.[0];
@@ -157,10 +130,8 @@ export default function DepositPage() {
       return;
     }
 
-    if (file.size > 1024 * 1024) {
-      setError(
-        "The receipt image must be smaller than 1 MB."
-      );
+    if (file.size > 2 * 1024 * 1024) {
+      setError("The receipt image must be smaller than 2 MB.");
       event.target.value = "";
       return;
     }
@@ -179,9 +150,7 @@ export default function DepositPage() {
     reader.readAsDataURL(file);
   }
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setError("");
@@ -215,16 +184,13 @@ export default function DepositPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to submit your deposit."
-        );
+        throw new Error(data.message || "Unable to submit your deposit.");
       }
 
       setSuccess(
         `Your deposit was submitted successfully. Reference: ${
           data.deposit?.transactionHash || "Generated"
-        }`
+        }`,
       );
 
       setAmount("");
@@ -234,7 +200,7 @@ export default function DepositPage() {
       setError(
         error instanceof Error
           ? error.message
-          : "Unable to submit your deposit."
+          : "Unable to submit your deposit.",
       );
     } finally {
       setSubmitting(false);
@@ -245,20 +211,14 @@ export default function DepositPage() {
     <AppShell mode="user">
       <header className="dashboard-header">
         <div>
-          <Link
-            href="/dashboard"
-            className="page-back-link"
-          >
+          <Link href="/dashboard" className="page-back-link">
             <ArrowLeft size={16} />
             Back to overview
           </Link>
 
           <h1>Make a deposit</h1>
 
-          <p>
-            Select an asset and submit your payment
-            information.
-          </p>
+          <p>Select an asset and submit your payment information.</p>
         </div>
       </header>
 
@@ -266,9 +226,7 @@ export default function DepositPage() {
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Deposit method
-              </span>
+              <span className="panel-eyebrow">Deposit method</span>
 
               <h2>Select a crypto asset</h2>
             </div>
@@ -278,43 +236,31 @@ export default function DepositPage() {
 
           {loadingWallets ? (
             <div className="small-loading-state">
-              <LoaderCircle
-                className="spin"
-                size={25}
-              />
-
+              <LoaderCircle className="spin" size={25} />
               Loading deposit methods...
             </div>
           ) : (
             <div className="crypto-option-grid">
-              {Object.entries(wallets).map(
-                ([key, wallet]) => (
-                  <button
-                    type="button"
-                    key={key}
-                    className={`crypto-option ${
-                      walletKey === key
-                        ? "selected"
-                        : ""
-                    }`}
-                    onClick={() => setWalletKey(key)}
-                  >
-                    <span className="crypto-symbol">
-                      {key.startsWith("USDT")
-                        ? "USDT"
-                        : key}
-                    </span>
+              {Object.entries(wallets).map(([key, wallet]) => (
+                <button
+                  type="button"
+                  key={key}
+                  className={`crypto-option ${
+                    walletKey === key ? "selected" : ""
+                  }`}
+                  onClick={() => setWalletKey(key)}
+                >
+                  <span className="crypto-symbol">
+                    {key.startsWith("USDT") ? "USDT" : key}
+                  </span>
 
-                    <span>
-                      <strong>
-                        {walletNames[key] || key}
-                      </strong>
+                  <span>
+                    <strong>{walletNames[key] || key}</strong>
 
-                      <small>{wallet.network}</small>
-                    </span>
-                  </button>
-                )
-              )}
+                    <small>{wallet.network}</small>
+                  </span>
+                </button>
+              ))}
             </div>
           )}
 
@@ -330,17 +276,11 @@ export default function DepositPage() {
                   onClick={handleCopy}
                   aria-label="Copy wallet address"
                 >
-                  {copied ? (
-                    <Check size={18} />
-                  ) : (
-                    <Copy size={18} />
-                  )}
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
                 </button>
               </div>
 
-              <small>
-                Network: {selectedWallet.network}
-              </small>
+              <small>Network: {selectedWallet.network}</small>
             </div>
           )}
         </section>
@@ -348,70 +288,47 @@ export default function DepositPage() {
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <span className="panel-eyebrow">
-                Payment evidence
-              </span>
+              <span className="panel-eyebrow">Payment evidence</span>
 
               <h2>Submit your deposit</h2>
 
-              <p>
-                Your balance will be updated after the
-                deposit is approved.
-              </p>
+              <p>Your balance will be updated after the deposit is approved.</p>
             </div>
           </div>
 
-          {error && (
-            <div className="form-message form-error">
-              {error}
-            </div>
-          )}
+          {error && <div className="form-message form-error">{error}</div>}
 
           {success && (
             <div className="form-message form-success">
               {success}
 
-              <Link href="/dashboard">
-                Return to dashboard
-              </Link>
+              <Link href="/dashboard">Return to dashboard</Link>
             </div>
           )}
 
-          <form
-            className="dashboard-form"
-            onSubmit={handleSubmit}
-          >
+          <form className="dashboard-form" onSubmit={handleSubmit}>
             <label>
               Deposit amount in USD
-
               <input
                 type="number"
                 min="1"
                 step="0.01"
                 placeholder="Example: 500"
                 value={amount}
-                onChange={(event) =>
-                  setAmount(event.target.value)
-                }
+                onChange={(event) => setAmount(event.target.value)}
                 required
               />
             </label>
 
             <label>
               Payment receipt
-
               <span className="receipt-upload">
                 <Upload size={21} />
 
                 <span>
-                  <strong>
-                    {receiptName ||
-                      "Choose receipt image"}
-                  </strong>
+                  <strong>{receiptName || "Choose receipt image"}</strong>
 
-                  <small>
-                    JPG, PNG or WEBP · Maximum 1 MB
-                  </small>
+                  <small>JPG, PNG or WEBP · Maximum 2 MB</small>
                 </span>
 
                 <input
@@ -426,18 +343,11 @@ export default function DepositPage() {
             <button
               type="submit"
               className="dashboard-submit-button"
-              disabled={
-                submitting ||
-                loadingWallets ||
-                !selectedWallet
-              }
+              disabled={submitting || loadingWallets || !selectedWallet}
             >
               {submitting ? (
                 <>
-                  <LoaderCircle
-                    className="spin"
-                    size={18}
-                  />
+                  <LoaderCircle className="spin" size={18} />
                   Submitting...
                 </>
               ) : (

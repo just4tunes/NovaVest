@@ -4,6 +4,7 @@ import { InvestmentNotification } from "@/components/investment-notification";
 import { WithdrawalNotification } from "@/components/withdrawal-notification";
 import { getCurrentUser } from "@/lib/auth";
 import { DashboardScrollAnimations } from "@/components/dashboard-scroll-animations";
+import { InactivityLogout } from "@/components/inactivity-logout";
 
 export default async function DashboardLayout({
   children,
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
   return (
   <>
     <DashboardScrollAnimations />
+    <InactivityLogout />
     {children}
     <DashboardScrollAnimations />
     <WithdrawalNotification />

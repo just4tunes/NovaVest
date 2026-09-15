@@ -1,14 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
-import {
-  useState,
-  type ReactNode,
-} from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
@@ -22,6 +16,7 @@ import {
   UserRound,
   Users,
   WalletCards,
+  Globe2,
 } from "lucide-react";
 
 import { brand } from "@/lib/brand";
@@ -31,15 +26,11 @@ type AppShellProps = {
   mode?: "user" | "admin";
 };
 
-export function AppShell({
-  children,
-  mode = "user",
-}: AppShellProps) {
+export function AppShell({ children, mode = "user" }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [loggingOut, setLoggingOut] =
-    useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const userNavigation = [
     {
@@ -140,10 +131,7 @@ export function AppShell({
     },
   ];
 
-  const navigation =
-    mode === "admin"
-      ? adminNavigation
-      : userNavigation;
+  const navigation = mode === "admin" ? adminNavigation : userNavigation;
 
   function linkIsActive(href: string) {
     if (href === "/dashboard") {
@@ -173,25 +161,16 @@ export function AppShell({
   }
 
   return (
-    <main
-      className={`application application-${mode}`}
-    >
+    <main className={`application application-${mode}`}>
       <aside className="sidebar">
-        <Link
-          href="/"
-          className="brand sidebar-brand"
-        >
-          <span className="brand-mark">
-            {brand.shortName || "NV"}
-          </span>
+        <Link href="/" className="brand sidebar-brand">
+          <span className="brand-mark">{brand.shortName || "NV"}</span>
 
           <span>{brand.name}</span>
         </Link>
 
         <p className="sidebar-label">
-          {mode === "admin"
-            ? "Administration"
-            : "Your account"}
+          {mode === "admin" ? "Administration" : "Your account"}
         </p>
 
         <nav className="sidebar-navigation">
@@ -203,12 +182,8 @@ export function AppShell({
               <Link
                 key={item.label}
                 href={item.href}
-                className={`sidebar-link ${
-                  active ? "active" : ""
-                }`}
-                aria-current={
-                  active ? "page" : undefined
-                }
+                className={`sidebar-link ${active ? "active" : ""}`}
+                aria-current={active ? "page" : undefined}
               >
                 <Icon size={18} />
                 {item.label}
@@ -224,21 +199,25 @@ export function AppShell({
           disabled={loggingOut}
         >
           {loggingOut ? (
-            <LoaderCircle
-              size={18}
-              className="spin"
-            />
+            <LoaderCircle size={18} className="spin" />
           ) : (
             <LogOut size={18} />
           )}
 
-          {loggingOut
-            ? "Signing out..."
-            : "Sign out"}
+          {loggingOut ? "Signing out..." : "Sign out"}
         </button>
       </aside>
 
       <div className="application-content">
+        {mode === "user" && (
+          <div className="dashboard-website-row">
+            <Link href="/" className="dashboard-website-link">
+              <Globe2 size={16} />
+              Back to website
+            </Link>
+          </div>
+        )}
+
         {children}
       </div>
 
@@ -255,12 +234,8 @@ export function AppShell({
               <Link
                 key={item.label}
                 href={item.href}
-                className={
-                  active ? "active" : ""
-                }
-                aria-current={
-                  active ? "page" : undefined
-                }
+                className={active ? "active" : ""}
+                aria-current={active ? "page" : undefined}
               >
                 <span className="mobile-nav-icon">
                   <Icon size={21} />

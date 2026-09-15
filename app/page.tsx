@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { brand } from "@/lib/brand";
+import { LandingScrollAnimations } from "@/components/landing-scroll-animations";
 
 const marketAssets = [
   {
@@ -134,6 +135,7 @@ const hallmarks = [
 export default function Home() {
   return (
     <main className="home-page">
+      <LandingScrollAnimations />
       <section className="home-hero" id="home">
         <nav className="home-navbar home-container">
           <Link href="/" className="home-brand">
